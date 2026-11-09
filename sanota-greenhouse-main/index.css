@@ -1,0 +1,39 @@
+import React from 'react';
+
+/**
+ * Circular SVG gauge with color-coded zones
+ */
+const CircleGauge = ({ value, max, color }) => {
+  const pct = Math.min(Math.max(value / max, 0), 1);
+  const r = 35; 
+  const circ = 2 * Math.PI * r;
+  const offset = circ - pct * circ;
+
+  return (
+    <svg viewBox="0 0 80 80" className="gauge-svg" style={{ overflow: 'visible' }}>
+      <circle cx="40" cy="40" r={r} fill="none" stroke="rgba(255,255,255,0.07)" strokeWidth={8} />
+      <circle
+        cx="40" cy="40" r={r} fill="none"
+        stroke={color} strokeWidth={8}
+        strokeDasharray={circ} strokeDashoffset={offset}
+        strokeLinecap="round"
+        style={{ transform: 'rotate(-90deg)', transformOrigin: '40px 40px', transition: 'stroke-dashoffset 1.2s ease' }}
+      />
+    </svg>
+  );
+};
+
+const SensorCard = ({ label, value, unit, icon: Icon, color, max, pct }) => (
+  <div className="glass-card sensor-card" style={{ minWidth: 0 }}>
+    <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <CircleGauge value={pct ?? value} max={pct != null ? 100 : max} color={color} />
+      <div style={{ position: 'absolute', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+        <Icon size={16} color={color} />
+      </div>
+    </div>
+    <div className="sensor-value" style={{ color }}>{value}<span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>{unit}</span></div>
+    <div className="sensor-label">{label}</div>
+  </div>
+);
+
+export default SensorCard;
