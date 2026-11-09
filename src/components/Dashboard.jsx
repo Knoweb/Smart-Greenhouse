@@ -19,28 +19,56 @@ const Dashboard = ({ selectedZone, nodes, sensors, readings, actuators, actuator
     .filter(n => !selectedZone || n.zone_id === selectedZone.id)
     .map(n => n.id);
 
+  // Helper to match sensor types flexibly (handles uv_index, uv index, UV_INDEX, etc.)
+  const typeMatches = (sensorType, targetTypes) => {
+    if (!sensorType) return false;
+    const st = sensorType.toLowerCase();
+    const stClean = st.replace(/[\s_-]+/g, '');
+    return targetTypes.some(t => {
+      const target = t.toLowerCase();
+      const targetClean = target.replace(/[\s_-]+/g, '');
+      return st === target || stClean === targetClean;
+    });
+  };
+
   // Optimized helper to find sensor value by type, filtered by zone
   const getVal = (types) => {
     if (!Array.isArray(types)) types = [types];
     const lowerTypes = types.map(t => t.toLowerCase());
 
-    // Find sensors of this type that belong to nodes in the active zone
+    // 1. Find sensors of this type that belong to nodes in the active zone
     const matchingSensors = sensors.filter(s =>
-      lowerTypes.includes((s.sensor_type || '').toLowerCase()) && activeNodeIds.includes(s.node_id)
+      typeMatches(s.sensor_type, lowerTypes) && activeNodeIds.includes(s.node_id)
     );
 
-    if (matchingSensors.length === 0) {
-      const isOutsideOrRain = lowerTypes.some(t => t.includes('outside') || t.includes('rain'));
-      if (isOutsideOrRain || !selectedZone) {
-        const globalSensor = sensors.find(s => lowerTypes.includes((s.sensor_type || '').toLowerCase()));
-        if (globalSensor && readings[globalSensor.id] !== undefined) return readings[globalSensor.id];
+    // Prefer non-zero reading from zone sensors
+    for (const s of matchingSensors) {
+      if (readings[s.id] !== undefined && readings[s.id] !== null && Number(readings[s.id]) > 0) {
+        return readings[s.id];
       }
-      return 0;
+    }
+    for (const s of matchingSensors) {
+      if (readings[s.id] !== undefined && readings[s.id] !== null) {
+        return readings[s.id];
+      }
     }
 
-    for (const s of matchingSensors) {
-      if (readings[s.id] !== undefined) return readings[s.id];
+    // 2. Fallback to global sensor if outside, rain, or when not found in selected zone
+    const isOutsideOrRain = lowerTypes.some(t => t.includes('outside') || t.includes('rain'));
+    if (matchingSensors.length === 0 || isOutsideOrRain || !selectedZone) {
+      const globalSensors = sensors.filter(s => typeMatches(s.sensor_type, lowerTypes));
+      for (const s of globalSensors) {
+        if (readings[s.id] !== undefined && readings[s.id] !== null && Number(readings[s.id]) > 0) {
+          return readings[s.id];
+        }
+      }
+      for (const s of globalSensors) {
+        if (readings[s.id] !== undefined && readings[s.id] !== null) {
+          return readings[s.id];
+        }
+      }
     }
+
     return 0;
   };
 
@@ -64,7 +92,7 @@ const Dashboard = ({ selectedZone, nodes, sensors, readings, actuators, actuator
     nitrogen: getVal(['npk_n', 'soil_nitrogen', 'nitrogen', 'n']),
     phosphorus: getVal(['npk_p', 'soil_phosphorus', 'phosphorus', 'p']),
     potassium: getVal(['npk_k', 'soil_potassium', 'potassium', 'k']),
-    uvLevel: getVal(['uv_level', 'uv']),
+    uvLevel: getVal(['uv_index', 'uv_level', 'uv', 'uvindex', 'uv index', 'uv_idx']),
     waterTank: getVal(['water_level', 'water', 'tank_level']),
     fertilizerTank: getVal(['fert_level', 'fertilizer_level']),
   };
@@ -73,8 +101,8 @@ const Dashboard = ({ selectedZone, nodes, sensors, readings, actuators, actuator
     if (!Array.isArray(types)) types = [types];
     const lowerTypes = types.map(t => t.toLowerCase());
     return sensors.some(s =>
-      lowerTypes.includes((s.sensor_type || '').toLowerCase()) &&
-      (isGlobal || !selectedZone || activeNodeIds.includes(s.node_id))
+      typeMatches(s.sensor_type, lowerTypes) &&
+      (isGlobal || !selectedZone || activeNodeIds.includes(s.node_id) || readings[s.id] !== undefined)
     );
   };
 
@@ -87,7 +115,7 @@ const Dashboard = ({ selectedZone, nodes, sensors, readings, actuators, actuator
     'temp_inside', 'temp', 'air_temperature', 'temperature', 'inside_temp', 'inside_temperature',
     'hum_inside', 'hum', 'air_humidity', 'humidity', 'inside_hum', 'inside_humidity',
     'light', 'light_intensity', 'lux',
-    'uv_level', 'uv',
+    'uv_index', 'uv_level', 'uv', 'uvindex', 'uv index', 'uv_idx',
     'co2', 'co2_level',
     'soil_moisture', 'soil_hum',
     'soil_temp', 'soil_temperature',
@@ -117,7 +145,7 @@ const Dashboard = ({ selectedZone, nodes, sensors, readings, actuators, actuator
               <SensorCard prefix="Inside" label="Light Intensity" value={d.light} unit="µmol" icon={Zap}
                 color="var(--accent-green)" pct={Math.round(d.light / 10)} trendValue="15" trendUp={true} />
             )}
-            {hasSensor(['uv_level', 'UV_LEVEL', 'uv']) && (
+            {hasSensor(['uv_index', 'uv_level', 'uv', 'uvindex', 'uv index', 'uv_idx']) && (
               <SensorCard prefix="Inside" label="UV Index" value={d.uvLevel} unit="UV" icon={ThermometerSun}
                 color={uvHigh ? 'var(--accent-red)' : 'var(--accent-purple)'} max={11} />
             )}
