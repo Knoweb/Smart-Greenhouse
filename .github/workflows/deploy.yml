@@ -1,0 +1,37 @@
+name: Deploy to DigitalOcean Droplet
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm ci || npm install
+
+      - name: Build Project
+        run: npm run build
+
+      - name: Deploy to DigitalOcean via SSH
+        uses: easingthemes/ssh-deploy@v5.1.0
+        with:
+          SSH_PRIVATE_KEY: ${{ secrets.DO_SSH_KEY }}
+          REMOTE_HOST: ${{ secrets.DO_HOST }}
+          REMOTE_USER: ${{ secrets.DO_USER }}
+          TARGET: /var/www/sanota-greenhouse
+          SOURCE: "dist/"
+
