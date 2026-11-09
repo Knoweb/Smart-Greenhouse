@@ -30,7 +30,7 @@ const AuthScreen = ({
   onSignInWithGoogle,
   onResetPassword,
   loading,
-  theme = 'dark',
+  theme = 'light',
   toggleTheme
 }) => {
   const [email, setEmail] = useState('');

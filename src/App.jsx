@@ -76,7 +76,7 @@ export default function App() {
   const activeSensors = sensors.filter(s => activeNodeIds.includes(s.node_id));
 
   const [tab, setTab] = useState('dashboard');
-  const [theme, setTheme] = useState(() => localStorage.getItem('sanota-theme') || 'dark');
+  const [theme, setTheme] = useState(() => localStorage.getItem('sanota-theme') || 'light');
   const [showZoneMenu, setShowZoneMenu] = useState(false);
 
   // Helper to get actual outside temp from readings
