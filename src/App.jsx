@@ -213,102 +213,64 @@ export default function App() {
       {/* ===== MAIN CONTENT ===== */}
       <main className="main-content">
         {/* Page Header */}
-        <header className="page-header">
-          {/* Mobile Top Navigation Row: Logo + Controls */}
-          <div className="mobile-header-top hide-desktop">
-            <div className="mobile-brand">
-              <SanotaLogo height={26} />
+        <div className="page-header">
+          <div className="header-primary">
+            <div className="mobile-brand-wrap hide-desktop" style={{ marginBottom: 6 }}>
+              <SanotaLogo height={24} />
             </div>
+            <div className="page-title">{PAGE_TITLES[tab].title}</div>
+            <div className="page-sub">{PAGE_TITLES[tab].sub}</div>
+          </div>
 
-            <div className="mobile-top-actions">
-              {/* Zone Selector on Mobile */}
-              <div style={{ position: 'relative' }}>
-                <div className="gh-selector-mobile" onClick={() => setShowZoneMenu(!showZoneMenu)}>
-                  <span className="zone-pill-text">{selectedZone ? selectedZone.name : 'All Zones'}</span>
-                  <ChevronDown size={13} />
-                </div>
+          <div className="header-actions">
+            {/* Zone Selector (Show on Mobile) */}
+            <div style={{ position: 'relative' }} className="hide-desktop">
+              <div className="gh-selector-mobile" onClick={() => setShowZoneMenu(!showZoneMenu)}>
+                {selectedZone ? selectedZone.name : 'All Zones'} <ChevronDown size={14} />
+              </div>
 
-                {showZoneMenu && (
-                  <div className="zone-dropdown-menu mobile-align-right">
-                    <div
-                      onClick={() => { setSelectedZone(null); setShowZoneMenu(false); }}
-                      className={`zone-dropdown-item ${!selectedZone ? 'active' : ''}`}
-                    >
-                      All Zones
-                    </div>
-                    {zones.map(z => (
-                      <div
-                        key={z.id}
-                        onClick={() => { setSelectedZone(z); setShowZoneMenu(false); }}
-                        className={`zone-dropdown-item ${selectedZone?.id === z.id ? 'active' : ''}`}
-                      >
-                        {z.name}
-                      </div>
-                    ))}
+              {showZoneMenu && (
+                <div className="zone-dropdown-menu mobile-align-right">
+                  <div
+                    onClick={() => { setSelectedZone(null); setShowZoneMenu(false); }}
+                    className={`zone-dropdown-item ${!selectedZone ? 'active' : ''}`}
+                  >
+                    All Zones
                   </div>
-                )}
-              </div>
+                  {zones.map(z => (
+                    <div
+                      key={z.id}
+                      onClick={() => { setSelectedZone(z); setShowZoneMenu(false); }}
+                      className={`zone-dropdown-item ${selectedZone?.id === z.id ? 'active' : ''}`}
+                    >
+                      {z.name}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
 
-              {/* Theme Toggle Button */}
-              <button
-                type="button"
-                onClick={toggleTheme}
-                className="theme-toggle-btn"
-                aria-label="Toggle Theme"
-                title="Toggle Theme"
-              >
-                {theme === 'dark' ? <Sun size={17} /> : <Moon size={17} />}
-              </button>
+            {/* Theme Toggle in Header */}
+            <div onClick={toggleTheme} className="theme-toggle-btn" title="Toggle Theme" role="button" tabIndex={0}>
+              {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
+            </div>
 
-              {/* Compact Logout Icon Button for Mobile */}
-              <button
-                type="button"
-                className="header-logout-btn mobile-icon-logout"
-                onClick={signOut}
-                title="Logout"
-                aria-label="Logout"
-              >
-                <LogOut size={16} />
-              </button>
+            <div className="header-user-chip">
+              {user.email}
+            </div>
+
+            <button className="header-logout-btn" onClick={signOut} title="Logout">
+              <LogOut size={16} />
+              <span>Logout</span>
+            </button>
+
+            <div className="glass-card header-stat">
+              <span className="stat-label">OUTSIDE</span>
+              <span className="stat-value" style={{ color: 'var(--text-primary)' }}>{outsideTemp}°C</span>
+              <span className="stat-emoji">{outsideTemp > 25 ? 'Warm' : 'Cool'}</span>
             </div>
           </div>
-
-          {/* Main Title Row: Desktop Actions & Mobile Weather */}
-          <div className="header-main-row">
-            <div className="header-primary">
-              <div className="page-title">{PAGE_TITLES[tab].title}</div>
-              <div className="page-sub">{PAGE_TITLES[tab].sub}</div>
-            </div>
-
-            {/* Desktop Actions */}
-            <div className="header-actions hide-mobile">
-              <div onClick={toggleTheme} className="theme-toggle-btn">
-                {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
-              </div>
-
-              <div className="header-user-chip">
-                {user.email}
-              </div>
-
-              <button className="header-logout-btn" onClick={signOut}>
-                <LogOut size={16} />
-                <span>Logout</span>
-              </button>
-
-              <div className="glass-card header-stat">
-                <span className="stat-label">OUTSIDE</span>
-                <span className="stat-value" style={{ color: 'var(--text-primary)' }}>{outsideTemp}°C</span>
-                <span className="stat-emoji">{outsideTemp > 25 ? 'Warm' : 'Cool'}</span>
-              </div>
-            </div>
-
-            {/* Mobile Weather Pill */}
-            <div className="mobile-weather-pill hide-desktop">
-              <span className="mobile-weather-temp">{outsideTemp}°C</span>
-              <span className="mobile-weather-label">{outsideTemp > 25 ? 'Warm' : 'Outside'}</span>
-            </div>
-          </div>
-        </header>
+        </div>
 
 
         {/* Tab Pages */}
